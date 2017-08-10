@@ -3,24 +3,45 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
+	"log"
 )
 
 type Phone struct {
 	Name string
 	Family string
-	Tel int
-	link *Phone
+	Tell string
 }
 
-var first *Phone = nil
-var current *Phone = nil
+var obj []*Phone
 
-var text string
+type ByName []*Phone
+func (n ByName) Len() int { return len(n)}
+func (n ByName) Swap(i,j int) { n[i],n[j]= n[j],n[i]}
+func (n ByName) Less(i,j int) bool { return n[i].Name < n[j].Name}
+
+type ByFamily []*Phone
+func (f ByFamily) Len() int { return len(f)}
+func (f ByFamily) Swap(i,j int) { f[i],f[j]= f[j],f[i]}
+func (f ByFamily) Less(i,j int) bool { return f[i].Family < f[j].Family}
+
+
+type ByTell []*Phone
+func (t ByTell) Len() int { return len(t)}
+func (t ByTell) Swap(i,j int) { t[i],t[j]= t[j],t[i]}
+func (t ByTell) Less(i,j int) bool {return t[i].Tell < t[j].Tell}
+
 
 func main() {
-	fmt.Println("Contact Book")
+	file, err := os.Create("input.txt")
+	if err != nil {
+		log.Fatal("Cannot create file", err)
+	}
+	defer file.Close()
+
+	fmt.Fprintln(file,"Contact Book")
 	var n int
-	for n!=9 {
+	for n!=7 {
 		Menu()
 		Select(n)
 	}
@@ -28,9 +49,8 @@ func main() {
 //*************************Menu*************************
 func Menu() {
 	fmt.Println("1.Add New Phone\n","2.Delete Phone\n",
-		"3.Search By Name\n","4.Search By Number\n",
-		"5.Sort By Name\n","6.Sort By Family\n",
-		"7.Show List\n","8.Erase All Contact\n","9.Exit\n")
+		"3.Search\n","4.Sort\n","5.Show List\n",
+		"6.Erase All Contact\n","7.Exit\n")
 }
 //*************************Select In Menu*************************
 func Select(n int) {
@@ -41,244 +61,158 @@ func Select(n int) {
 	case 1:
 		AddPhone()
 	case 2:
-		//DeletePhone()
+		DeletePhone()
 	case 3:
-		SearchName()
+		Search()
 	case 4:
-		SearchNum()
+		Sort()
 	case 5:
-		SortName()
-	case 6:
-		SortFamily()
-	case 7:
 		ShowAll()
-	case 8:
-		//EraseAll()
-	case 9:
+	case 6:
+		EraseAll()
+	case 7:
 		ExitPro()
 	default:
-		fmt.Println("None Exist Num! Try again")
+		fmt.Println("None Exist Number! Try Again PLZ\n")
 	}
 }
 //*****************************Add phone******************************
 func AddPhone() {
-	var temp1 *Phone = first
-	var temp2 *Phone = new(Phone)
-
-	//take name
-	fmt.Println("Enter The Name :")
-	fmt.Scanln(&temp1.Name)
-
-	//take family name
-	fmt.Println("Enter The FamilyName :")
-	fmt.Scanln(&temp1.Family)
-
-	//take telephone
-	fmt.Println("Enter The TelephoneNum :")
-	fmt.Scanln(&temp1.Tel)
-
-	//adding
-	temp2.link = nil
-
-	if first == nil {
-		first = temp2
-	}else {
-		for temp1.link != nil {
-			temp1 = temp1.link
-		}
-		temp1.link=temp2
-	}
-}
-//*****************************Delete phone******************************
-/*func DeletePhone() {
-	fmt.Println("which phone want delete?(by name:1 or tel:2)  :")
-	var temp *Phone = new(Phone)
-
-	reader1 := bufio.NewReader(os.Stdin)
-	fmt.Println("Enter The Name :")
-	n,_ := reader1.ReadString('\n')
-	//choose
-	switch n {
-	case "1":
-		//take name
-		fmt.Println("Enter The Name :")
-		fmt.Scanln(&temp.Name)
-
-		//deleting
-		if first == nil {
-			fmt.Println("empty list")
-		}else {
-			for current != nil  {
-				current = current.link
-				if current.Name == temp.Name {
-					delete(current)
-					current = first
-				}else {
-					continue
-				}
-			}
-		}*/
-	/*case "2":
-		//take num
-		fmt.Println("Enter The Name :")
-		fmt.Scanln(&temp.Tel)
-
-		//deleting
-		if first == nil {
-			fmt.Println("empty list")
-		}else {
-			for current != nil  {
-				current = current.link
-				if current.Tel == temp.Tel {
-					delete(current)
-					current = first
-				}else {
-					continue
-				}
-			}
-
-		}
-	default:
-		fmt.Println("none exist number! try again ")
-	}
-}*/
-//*****************************Search By Name******************************
-func SearchName() *Phone {
-
-	var temp *Phone = new(Phone)
+	var temp *Phone=new(Phone)
 
 	//take name
 	fmt.Println("Enter The Name :")
 	fmt.Scanln(&temp.Name)
 
-	//searching
-	if first == nil {
-		fmt.Println("Empty List")
-		return nil
-	}else {
-		for current != nil && current.Name != temp.Name {
-			current = current.link
-		}
-	}
-	if current != nil {
-		fmt.Print("Found It\n",current.Name,"\t",
-			"\t",current.Family,"\t",current.Tel)
-		return current
-	}else {
-		fmt.Println("404 Not Found")
-		current = first
-		return nil
-	}
+	//take family name
+	fmt.Println("Enter The FamilyName :")
+	fmt.Scanln(&temp.Family)
+
+	//take telephone
+	fmt.Println("Enter The TelephoneNum :")
+        fmt.Scanln(&temp.Tell)
+
+	//adding
+	obj=append(obj,temp)
+	fmt.Println()
 }
-//*****************************Search By Num******************************
-func SearchNum() *Phone {
+//*****************************Delete phone******************************
+func DeletePhone() {
+
+	//	var temp *Phone = new(Phone)
+	fmt.Println("which phone want delete?:\n",
+		"First Search Ur Contact")
+	/*out:=Search()
+	obj=obj[0:out]
+	obj=obj[out:]*/
+}
+//*****************************Search******************************
+func Search() int {
 
 	var temp *Phone = new(Phone)
 
-	//take num
-	fmt.Println("Enter The Name :")
-	fmt.Scanln(&temp.Tel)
+	fmt.Println("1.Search By Name\n","2.Search By FamilyName\n",
+		"3.Search By PhoneNumber")
 
-	//searching
-	if first == nil {
-		fmt.Println("Empty List")
-		return nil
-	}else {
-		for current != nil && current.Tel != temp.Tel {
-			current = current.link
+	var n int
+	fmt.Scanln(&n)
+	switch n {
+	case 1:
+		//take name
+		fmt.Println("Enter The Name :")
+		fmt.Scanln(&temp.Name)
+		for i:=0;i<len(obj);i++ {
+			if obj[i].Name==temp.Name {
+				fmt.Println(i+1,":",obj[i].Name,"\t\t",
+					obj[i].Family,"\t\t",obj[i].Tell,"\n")
+				return i
+			}else {
+				fmt.Println("404 Not Found\n")
+			}
 		}
+	case 2:
+		//take familyname
+		fmt.Println("Enter The FamilyName :")
+		fmt.Scanln(&temp.Family)
+		for i:=0;i<len(obj);i++ {
+			if obj[i].Family==temp.Family {
+				fmt.Println(i+1,":",obj[i].Name,"\t\t",
+					obj[i].Family,"\t\t",obj[i].Tell,"\n")
+				return i
+			}else {
+				fmt.Println("404 Not Found\n")
+			}
+		}
+	case 3:
+		//take phonenumber
+		fmt.Println("Enter The PhoneNumber :")
+		fmt.Scanln(&temp.Tell)
+		for i:=0;i<len(obj);i++ {
+			if obj[i].Tell==temp.Tell {
+				fmt.Println(i+1,":",obj[i].Name,"\t\t",
+					obj[i].Family,"\t\t",obj[i].Tell,"\n")
+				return i
+			}else {
+				fmt.Println("404 Not Found\n")
+			}
+		}
+	default:
+		fmt.Println("Non Exist Number!Try Again PLZ\n")
 	}
-	if current != nil {
-		fmt.Print("Found It\n",current.Name,"\t",
-			"\t",current.Family,"\t",current.Tel)
-		return current
-	}else {
-		fmt.Println("404 Not Found")
-		current = first
-		return nil
-	}
+	return 1
 }
 //*****************************Sort By Name******************************
-func SortName() {
-	var temp1 *Phone = first
-	countNode :=1
-	if first == nil {
-		fmt.Println("Empty List")
-	}else {
-		for temp1.link != nil {
-			temp1 = temp1.link
-			countNode++
+func Sort() {
+	fmt.Println("1.Sort By Name\n","2.Sort By Family\n",
+		"3.Sort By PhoneNumber")
+
+	var n int
+	fmt.Scanln(&n)
+	switch n {
+	case 1 :
+		for i:=0;i<len(obj);i++ {
+			sort.Sort(ByName(obj))
+			fmt.Println(i+1,":",obj[i].Name,"\t\t",obj[i].Family,
+			"\t\t",obj[i].Tell,"\n")
 		}
-	}
-
-	var s[100] *Phone
-	s[0] = first
-	var counter int
-
-	for counter=0 ; counter < countNode ; counter++ {
-		s[counter]=s[counter-1].link
-	}
-	s[counter-1].link=nil
-
-	//checking
-	for i:=0;i<counter-1;i++ {
-		for j:=0;j<counter-i-1;j++ {
-			if s[j].Name > s[j+1].Name {
-				s[j+1],s[j] = s[j],s[j+1]
-			}
+	case 2:
+		for i:=0;i<len(obj);i++ {
+			sort.Sort(ByFamily(obj))
+			fmt.Println(i+1,":",obj[i].Name,"\t\t",obj[i].Family,
+				"\t\t",obj[i].Tell,"\n")
 		}
-	}
-	//show sorted list
-}
-//*****************************Sort By Family******************************
-func SortFamily() {
-	var temp1 *Phone = first
-	countNode :=1
-	if first == nil {
-		fmt.Println("Empty List")
-	}else {
-		for temp1.link != nil {
-			temp1 = temp1.link
-			countNode++
+	case 3:
+		for i:=0;i<len(obj);i++ {
+			sort.Sort(ByTell(obj))
+			fmt.Println(i+1,":",obj[i].Name,"\t\t",obj[i].Family,
+				"\t\t",obj[i].Tell,"\n")
 		}
+	default:
+		fmt.Println("Non Exist Number! Try Again PLZ")
 	}
-
-	var s[100] *Phone
-	s[0] = first
-	var counter int
-
-	for counter=0 ; counter < countNode ; counter++ {
-		s[counter]=s[counter-1].link
-	}
-	s[counter-1].link=nil
-
-	//checking
-	for i:=0;i<counter-1;i++ {
-		for j:=0;j<counter-i-1;j++ {
-			if s[j].Family > s[j+1].Family {
-				s[j+1],s[j] = s[j],s[j+1]
-			}
-		}
-	}
-	//show sorted list
 }
 //*****************************Show All******************************
 func ShowAll() {
 
+	fmt.Println("Name \t\t FamilyName \t\t PhoneNumber")
+	fmt.Println("....... \t ............ \t\t .............")
+
+	for i:=0;i<len(obj);i++ {
+		fmt.Println(i+1,":",obj[i].Name,"\t\t",obj[i].Family,
+			"\t\t",obj[i].Tell,"\n")
+		}
 }
 //*****************************Erase All******************************
-/*func EraseAll() {
-        var temp *Phone = first
-	if first == nil {
-		fmt.Println("list is empty")
+func EraseAll() {
+	if obj[0:len(obj)]==nil {
+		fmt.Println("Empty List")
 	}else {
-		for first != nil {
-			temp = first
-			first = first.link
-			delete(temp)
+		for i:=0;i<len(obj);i++ {
+			obj[i]=nil
 		}
+		fmt.Println("Cleared List\n")
 	}
-}*/
+}
 //*****************************Exit******************************
 func ExitPro() {
 	var key string
