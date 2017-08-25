@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"log"
+	"io/ioutil"
+	"encoding/json"
 )
 
 type Phone struct {
@@ -12,7 +13,6 @@ type Phone struct {
 	Family string
 	Tell string
 }
-
 var obj []*Phone
 
 type ByName []*Phone
@@ -31,15 +31,20 @@ func (t ByTell) Len() int { return len(t)}
 func (t ByTell) Swap(i,j int) { t[i],t[j]= t[j],t[i]}
 func (t ByTell) Less(i,j int) bool {return t[i].Tell < t[j].Tell}
 
+func inita() {
+	f, err := os.Open("contact.txt")
+	if err != nil {
+		return
+	}
+	data, err := ioutil.ReadAll(f)
+	if err != nil {
+		return
+	}
+	json.Unmarshal(data, &obj)
+}
 
 func main() {
-	file, err := os.Create("input.txt")
-	if err != nil {
-		log.Fatal("Cannot create file", err)
-	}
-	defer file.Close()
-
-	fmt.Fprintln(file,"Contact Book")
+	inita()
 	var n int
 	for n!=7 {
 		Menu()
@@ -95,16 +100,15 @@ func AddPhone() {
 	//adding
 	obj=append(obj,temp)
 	fmt.Println()
+
 }
 //*****************************Delete phone******************************
 func DeletePhone() {
 
-	//	var temp *Phone = new(Phone)
 	fmt.Println("which phone want delete?:\n",
 		"First Search Ur Contact")
-	/*out:=Search()
+	out:=Search()
 	obj=obj[0:out]
-	obj=obj[out:]*/
 }
 //*****************************Search******************************
 func Search() int {
@@ -193,7 +197,6 @@ func Sort() {
 }
 //*****************************Show All******************************
 func ShowAll() {
-
 	fmt.Println("Name \t\t FamilyName \t\t PhoneNumber")
 	fmt.Println("....... \t ............ \t\t .............")
 
@@ -205,7 +208,7 @@ func ShowAll() {
 //*****************************Erase All******************************
 func EraseAll() {
 	if obj[0:len(obj)]==nil {
-		fmt.Println("Empty List")
+		fmt.Println("Empty List\n")
 	}else {
 		for i:=0;i<len(obj);i++ {
 			obj[i]=nil
@@ -215,6 +218,14 @@ func EraseAll() {
 }
 //*****************************Exit******************************
 func ExitPro() {
+	f, err := os.Create("contact.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	data, err := json.Marshal(&obj)
+	f.Write(data)
+
 	var key string
 	fmt.Println("For Exit Press 'Q' ")
 	fmt.Scanln(&key)
